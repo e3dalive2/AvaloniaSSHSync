@@ -12,8 +12,12 @@ namespace AvaloniaApplication1
         [STAThread]
         public static void Main(string[] args)
         {
-            Console.OutputEncoding = Encoding.UTF8;
-            Console.Clear();
+            try
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+            }
+            catch { }
+
 
             BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);

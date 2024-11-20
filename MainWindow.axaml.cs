@@ -34,6 +34,8 @@ namespace AvaloniaApplication1
 
             StartProgressUpdate();
 
+            MainWindow1.Background = new SolidColorBrush(Color.FromRgb(127, 127, 127));
+
             _stackPanel = MainStackPanel;
             _progressPanel = StackProgressPanel;
 
@@ -76,7 +78,8 @@ namespace AvaloniaApplication1
                 Text = line,
                 FontSize = 16,               // Set font size
                 //Margin = new Thickness(10),  // Add some margin
-                Foreground = Brushes.Blue    // Set text color
+                Foreground = Brushes.Black,    // Set text color
+                Background=Brushes.LightGray,
             };
             _stackPanel.Children.Insert(0,textBlock);
         }
@@ -101,16 +104,35 @@ namespace AvaloniaApplication1
                     Value = progress,
                     Height = 20,
                     Margin = new Thickness(0, 10, 0, 0),
-                    Foreground = id % 2 == 0 ? Brushes.Green : Brushes.Blue,
+                    //Foreground = id % 2 == 0 ? Brushes.Green : Brushes.Blue,
+                    //Background=Brushes.LightGray,
+                    Foreground= id % 2==0?Brushes.Orange:Brushes.ForestGreen,
+                    
                     ShowProgressText = false,
                 };
                 bars[id] = bar;
                 _progressPanel.Children.Add(bar);
             }
-            if (progress < 0) progress = 0;
+            bool isNoProgress = progress < 0;
+            if (isNoProgress) progress = 0;
             bar.ShowProgressText = true;
             bar.Value = progress;
-            bar.ProgressTextFormat = msg+ "{0:F2}%";
+
+            if (progress < 30)
+            {
+                bar.Background = Brushes.LightPink;  // Early progress - Light Pink
+            }
+            else if (progress < 70)
+            {
+                bar.Background = Brushes.LightYellow;  // Mid progress - Light Yellow
+            }
+            else
+            {
+                bar.Background = Brushes.LightGreen;  // Near completion - Light Green
+            }
+
+            if (isNoProgress) bar.ProgressTextFormat = msg;
+            else bar.ProgressTextFormat = msg + " {0:F2}%";
         }
 
         public void onWebSocketMessage(String msg)
@@ -168,9 +190,10 @@ namespace AvaloniaApplication1
                 ProgressBar1.Value = _progressValue1;
                 ProgressBar2.Value = _progressValue2;*/
 
-                while(_stackPanel.Children.Count>100)
+                int maxRecords = 1000;
+                while(_stackPanel.Children.Count> maxRecords)
                 {
-                    _stackPanel.Children.RemoveRange(100, _stackPanel.Children.Count - 100);
+                    _stackPanel.Children.RemoveRange(maxRecords, _stackPanel.Children.Count - maxRecords);
                 }
 
             });
