@@ -7,9 +7,28 @@
 		x:Name="MainWindow1" 
         Title="AvaloniaApplication1">
 
-	<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-	<StackPanel x:Name="MainStackPanel" Margin="20">
-	</StackPanel>
-	</ScrollViewer>
+	<Grid>
+		<!-- Define two rows with 40% and 60% height -->
+		<Grid.RowDefinitions>
+			<RowDefinition Height="3*"/>
+			<!-- 40% -->
+			<RowDefinition Height="7*"/>
+			<!-- 60% -->
+		</Grid.RowDefinitions>
+
+		<!-- First ScrollViewer -->
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="0">
+			<StackPanel x:Name="StackProgressPanel" Margin="20">
+				<!-- Add content dynamically or statically -->
+			</StackPanel>
+		</ScrollViewer>
+
+		<!-- Second ScrollViewer -->
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="1">
+			<StackPanel x:Name="MainStackPanel" Margin="20">
+				<!-- Add content dynamically or statically -->
+			</StackPanel>
+		</ScrollViewer>
+	</Grid>
 
 </Window>

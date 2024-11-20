@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using System;
+using System.Text;
 
 namespace AvaloniaApplication1
 {
@@ -9,8 +10,14 @@ namespace AvaloniaApplication1
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args) => BuildAvaloniaApp()
+        public static void Main(string[] args)
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+            Console.Clear();
+
+            BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
+        }
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()

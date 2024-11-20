@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Timers;
 using Avalonia;
@@ -7,7 +8,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Newtonsoft.Json.Linq;
+using Tmds.DBus.Protocol;
 using Websocket.Client;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace AvaloniaApplication1
@@ -19,8 +22,11 @@ namespace AvaloniaApplication1
         private double _progressValue2 = 50;
 
         private StackPanel _stackPanel;
+        private StackPanel _progressPanel;
 
         WebsocketClient ws;
+
+        Dictionary<int, ProgressBar> bars = new Dictionary<int, ProgressBar>();
 
         public MainWindow()
         {
@@ -29,10 +35,13 @@ namespace AvaloniaApplication1
             StartProgressUpdate();
 
             _stackPanel = MainStackPanel;
-            AddProgressBars(4);
+            _progressPanel = StackProgressPanel;
 
             String uri = "ws://localhost:27059/Main";
             ws = new WebsocketClient(new Uri(uri));
+            ws.ReconnectTimeout = TimeSpan.FromSeconds(5);
+            ws.LostReconnectTimeout = TimeSpan.FromSeconds(5);
+
             onInfo("Connecting " + uri);
             //ws.Connect();
 
@@ -49,28 +58,6 @@ namespace AvaloniaApplication1
             });
             ws.Start();
 
-            /*ws.OnError += (sender, e) =>
-            {
-                try
-                {
-                    onError(e.Message);
-                }
-                catch (Exception ex)
-                {
-                    onError(ex.Message);
-                }
-            };
-            ws.OnMessage += (sender, e) =>
-            {
-                try
-                {
-                    onWebSocketMessage(e.Data);
-                }
-                catch (Exception ex)
-                {
-                    onError(ex.Message);
-                }
-            };*/
         }
 
         public void onError(String err)
@@ -78,7 +65,20 @@ namespace AvaloniaApplication1
             Dispatcher.UIThread.InvokeAsync(() =>
             {
                 Console.WriteLine(err);
+                uiAddLine(err);
             });
+        }
+
+        public void uiAddLine(String line)
+        {
+            var textBlock = new TextBlock
+            {
+                Text = line,
+                FontSize = 16,               // Set font size
+                //Margin = new Thickness(10),  // Add some margin
+                Foreground = Brushes.Blue    // Set text color
+            };
+            _stackPanel.Children.Insert(0,textBlock);
         }
 
         public void onInfo(String info)
@@ -86,7 +86,31 @@ namespace AvaloniaApplication1
             Dispatcher.UIThread.InvokeAsync(() =>
             {
                 Console.WriteLine(info);
+                uiAddLine(info);
             });
+        }
+
+        public void addUpdateProgressBar(int id,double progress,String msg)
+        {
+            if(!bars.TryGetValue(id, out var bar))
+            {
+                bar = new ProgressBar
+                {
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = progress,
+                    Height = 20,
+                    Margin = new Thickness(0, 10, 0, 0),
+                    Foreground = id % 2 == 0 ? Brushes.Green : Brushes.Blue,
+                    ShowProgressText = false,
+                };
+                bars[id] = bar;
+                _progressPanel.Children.Add(bar);
+            }
+            if (progress < 0) progress = 0;
+            bar.ShowProgressText = true;
+            bar.Value = progress;
+            bar.ProgressTextFormat = msg+ "{0:F2}%";
         }
 
         public void onWebSocketMessage(String msg)
@@ -103,31 +127,23 @@ namespace AvaloniaApplication1
                 String message = js["message"].ToString();
                 onInfo(message);
             }
-
-        }
-
-        private void AddProgressBars(int count)
-        {
-            for (int i = 0; i < count; i++)
+            else if (type == "progress")
             {
-                var newProgressBar = new ProgressBar
-                {
-                    Minimum = 0,
-                    Maximum = 100,
-                    Value = i * 20, // Example: Assign an initial value
-                    Height = 20,
-                    Margin = new Thickness(0, 10, 0, 0),
-                    Foreground = i % 2 == 0 ? Brushes.Green : Brushes.Blue,
-                    ShowProgressText=true
-                };
-
-                // Optionally set a name if you need to reference it later
-                newProgressBar.Name = $"DynamicProgressBar{i}";
-
-                // Add the ProgressBar to the StackPanel
-                _stackPanel.Children.Insert(0,newProgressBar);
+                String message = js["message"].ToString();
+                double tick = (double)js["progress"];
+                int id = (int)js["id"];
+                //onInfo(msg);
+                Dispatcher.UIThread.InvokeAsync(() => addUpdateProgressBar(id, tick, message));
+            }
+            else if (type == "progress_update")
+            {
+                String message = js["message"].ToString();
+                int id = (int)js["id"];
+                Dispatcher.UIThread.InvokeAsync(() => addUpdateProgressBar(id, -1, message));
             }
         }
+
+        
 
         private void StartProgressUpdate()
         {
@@ -140,7 +156,10 @@ namespace AvaloniaApplication1
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                onInfo("status: "+ws.IsRunning);
+                if (!ws.IsRunning)
+                {
+                    onInfo("ws status: " + ws.IsRunning);
+                }
 
                 // Update the progress bar values
                 /*_progressValue1 = (_progressValue1 + 1) % 101; // Loop from 0 to 100
@@ -148,6 +167,11 @@ namespace AvaloniaApplication1
 
                 ProgressBar1.Value = _progressValue1;
                 ProgressBar2.Value = _progressValue2;*/
+
+                while(_stackPanel.Children.Count>100)
+                {
+                    _stackPanel.Children.RemoveRange(100, _stackPanel.Children.Count - 100);
+                }
 
             });
         }
