@@ -4,15 +4,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
         x:Class="AvaloniaApplication1.MainWindow"
-		x:Name="MainWindow1" 
+        x:Name="MainWindow1"
         Title="AvaloniaApplication1">
 
 	<Grid>
-		<!-- Define two rows with 40% and 60% height -->
+		<!-- Define two rows with 40% and 60% height, and an adjustable spacer -->
 		<Grid.RowDefinitions>
-			<RowDefinition Height="3*"/>
+			<RowDefinition Height="3*" />
 			<!-- 40% -->
-			<RowDefinition Height="7*"/>
+			<RowDefinition Height="Auto" />
+			<!-- Spacer row (GridSplitter) -->
+			<RowDefinition Height="7*" />
 			<!-- 60% -->
 		</Grid.RowDefinitions>
 
@@ -23,8 +25,12 @@
 			</StackPanel>
 		</ScrollViewer>
 
+		<!-- Spacer (GridSplitter) -->
+		<GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                      Height="1" Background="DarkGray" ShowsPreview="True" />
+		
 		<!-- Second ScrollViewer -->
-		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="1">
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="2">
 			<StackPanel x:Name="MainStackPanel" Margin="20">
 				<!-- Add content dynamically or statically -->
 			</StackPanel>

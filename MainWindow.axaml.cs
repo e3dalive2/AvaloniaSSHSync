@@ -17,14 +17,12 @@ namespace AvaloniaApplication1
 {
     public partial class MainWindow : Window
     {
-        private Timer _timer;
-        private double _progressValue1 = 0;
-        private double _progressValue2 = 50;
+        private Timer? _timer = null;
 
         private StackPanel _stackPanel;
         private StackPanel _progressPanel;
 
-        WebsocketClient ws;
+        WebsocketClient? ws=null;
 
         Dictionary<int, ProgressBar> bars = new Dictionary<int, ProgressBar>();
 
@@ -47,10 +45,10 @@ namespace AvaloniaApplication1
             ws.ErrorReconnectTimeout = TimeSpan.FromSeconds(5);
 
             onInfo("Connecting " + uri);
-            //ws.Connect();
 
             ws.MessageReceived.Subscribe(msg =>
             {
+                if (msg == null) return;
                 try
                 {
                     onWebSocketMessage(msg.Text);
@@ -139,7 +137,7 @@ namespace AvaloniaApplication1
 
         public void onWebSocketMessage(String msg)
         {
-            JObject js = JObject.Parse(msg);
+            JObject? js = JObject.Parse(msg);
             if (!js.ContainsKey("type"))
             {
                 onError("invalid json " + msg);
@@ -172,11 +170,11 @@ namespace AvaloniaApplication1
         private void StartProgressUpdate()
         {
             _timer = new Timer(1000/* / 60*/); // 60 times a second
-            _timer.Elapsed += UpdateProgressBars;
+            _timer.Elapsed += OnUpdate;
             _timer.Start();
         }
 
-        private void UpdateProgressBars(object sender, ElapsedEventArgs e)
+        private void OnUpdate(object? sender, ElapsedEventArgs e)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
