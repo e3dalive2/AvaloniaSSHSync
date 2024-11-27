@@ -43,6 +43,8 @@ namespace AvaloniaApplication1
             ws = new WebsocketClient(new Uri(uri));
             ws.ReconnectTimeout = TimeSpan.FromSeconds(5);
             ws.LostReconnectTimeout = TimeSpan.FromSeconds(5);
+            ws.ReconnectTimeout= TimeSpan.FromSeconds(5);
+            ws.ErrorReconnectTimeout = TimeSpan.FromSeconds(5);
 
             onInfo("Connecting " + uri);
             //ws.Connect();
