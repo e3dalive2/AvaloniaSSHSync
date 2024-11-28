@@ -5,7 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="900"
         x:Class="AvaloniaApplication1.MainWindow"
         x:Name="MainWindow1"
-        Title="AvaloniaApplication1">
+        Title="KifaSync UI">
 
 	<Grid>
 		<!-- Define two rows with 40% and 60% height, and an adjustable spacer -->
