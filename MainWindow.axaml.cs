@@ -22,9 +22,8 @@ namespace AvaloniaApplication1
         private StackPanel _stackPanel;
         private StackPanel _progressPanel;
 
-        WebsocketClient? ws=null;
-
-        Dictionary<int, ProgressBar> bars = new Dictionary<int, ProgressBar>();
+        private WebsocketClient? ws=null;
+        private Dictionary<int, ProgressBar> bars = new Dictionary<int, ProgressBar>();
 
         public MainWindow()
         {
@@ -58,6 +57,11 @@ namespace AvaloniaApplication1
                     onError(ex.Message);
                 }
             });
+            ws.DisconnectionHappened.Subscribe(info =>
+            {
+                onError(info.ToString());
+                ClearAll();
+            });
             ws.Start();
 
         }
@@ -70,6 +74,17 @@ namespace AvaloniaApplication1
                 uiAddLine(err);
             });
         }
+
+        void ClearAll()
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _stackPanel.Children.Clear();
+                _progressPanel.Children.Clear();
+                bars.Clear();
+            });
+        }
+            
 
         public void uiAddLine(String line)
         {
