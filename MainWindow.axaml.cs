@@ -37,6 +37,9 @@ namespace AvaloniaApplication1
             _progressPanel = StackProgressPanel;
 
             String uri = "ws://localhost:27059/Main";
+            Input1.Text = uri;
+            Input1.KeyUp += Input1_KeyUp; ;
+
             ws = new WebsocketClient(new Uri(uri));
             ws.ReconnectTimeout = TimeSpan.FromSeconds(5);
             ws.LostReconnectTimeout = TimeSpan.FromSeconds(5);
@@ -65,6 +68,16 @@ namespace AvaloniaApplication1
             ws.Start();
 
         }
+
+        private void Input1_KeyUp(object? sender, Avalonia.Input.KeyEventArgs e)
+        {
+            if(e.Key==Avalonia.Input.Key.Enter)
+            {
+                ws.Url = new Uri(Input1.Text);
+                ws.Reconnect();
+            }
+        }
+
 
         public void onError(String err)
         {

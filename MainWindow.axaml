@@ -10,27 +10,30 @@
 	<Grid>
 		<!-- Define two rows with 40% and 60% height, and an adjustable spacer -->
 		<Grid.RowDefinitions>
-			<RowDefinition Height="3*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="2*" />
 			<!-- 40% -->
 			<RowDefinition Height="Auto" />
 			<!-- Spacer row (GridSplitter) -->
-			<RowDefinition Height="7*" />
+			<RowDefinition Height="6*" />
 			<!-- 60% -->
 		</Grid.RowDefinitions>
 
+		<TextBox Name="InputEdit" Height="30" x:Name="Input1" />
+
 		<!-- First ScrollViewer -->
-		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="0">
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="1">
 			<StackPanel x:Name="StackProgressPanel" Margin="20">
 				<!-- Add content dynamically or statically -->
 			</StackPanel>
 		</ScrollViewer>
 
 		<!-- Spacer (GridSplitter) -->
-		<GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+		<GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                       Height="1" Background="DarkGray" ShowsPreview="True" />
 		
 		<!-- Second ScrollViewer -->
-		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="2">
+		<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="3">
 			<StackPanel x:Name="MainStackPanel" Margin="20">
 				<!-- Add content dynamically or statically -->
 			</StackPanel>
