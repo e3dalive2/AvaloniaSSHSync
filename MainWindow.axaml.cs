@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Timers;
 using Avalonia;
@@ -23,7 +26,13 @@ namespace AvaloniaApplication1
         private StackPanel _progressPanel;
 
         private WebsocketClient? ws=null;
-        private Dictionary<int, ProgressBar> bars = new Dictionary<int, ProgressBar>();
+
+        struct BarInfo
+        {
+            public ProgressBar bar;
+            public Stopwatch lastUpdate;
+        }
+        private ConcurrentDictionary<int, BarInfo> bars = new ConcurrentDictionary<int, BarInfo>();
 
         public MainWindow()
         {
@@ -121,11 +130,19 @@ namespace AvaloniaApplication1
             });
         }
 
+        public void removeBar(ProgressBar bar)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _progressPanel.Children.Remove(bar);
+            });
+        }
+
         public void addUpdateProgressBar(int id,double progress,String msg)
         {
-            if(!bars.TryGetValue(id, out var bar))
+            if(!bars.TryGetValue(id, out var barNfo))
             {
-                bar = new ProgressBar
+                var bar = new ProgressBar
                 {
                     Minimum = 0,
                     Maximum = 100,
@@ -138,29 +155,37 @@ namespace AvaloniaApplication1
                     
                     ShowProgressText = false,
                 };
-                bars[id] = bar;
+                barNfo.bar= bar;
+                barNfo.lastUpdate = Stopwatch.StartNew();
+                bars[id] = barNfo;
                 _progressPanel.Children.Add(bar);
             }
+
+            barNfo.lastUpdate.Restart();
+
             bool isNoProgress = progress < 0;
             if (isNoProgress) progress = 0;
-            bar.ShowProgressText = true;
-            bar.Value = progress;
+            {
+                var bar = barNfo.bar;
+                bar.ShowProgressText = true;
+                bar.Value = progress;
 
-            if (progress < 30)
-            {
-                bar.Background = Brushes.LightPink;  // Early progress - Light Pink
-            }
-            else if (progress < 70)
-            {
-                bar.Background = Brushes.LightYellow;  // Mid progress - Light Yellow
-            }
-            else
-            {
-                bar.Background = Brushes.LightGreen;  // Near completion - Light Green
-            }
+                if (progress < 30)
+                {
+                    bar.Background = Brushes.LightPink;  // Early progress - Light Pink
+                }
+                else if (progress < 70)
+                {
+                    bar.Background = Brushes.LightYellow;  // Mid progress - Light Yellow
+                }
+                else
+                {
+                    bar.Background = Brushes.LightGreen;  // Near completion - Light Green
+                }
 
-            if (isNoProgress) bar.ProgressTextFormat = msg;
-            else bar.ProgressTextFormat = msg + " {0:F2}%";
+                if (isNoProgress) bar.ProgressTextFormat = msg;
+                else bar.ProgressTextFormat = msg + " {0:F2}%";
+            }
         }
 
         public void onWebSocketMessage(String msg)
@@ -223,6 +248,16 @@ namespace AvaloniaApplication1
                 {
                     _stackPanel.Children.RemoveRange(maxRecords, _stackPanel.Children.Count - maxRecords);
                 }
+
+                foreach(var barInfo in bars.ToImmutableList())
+                {
+                    if (barInfo.Value.lastUpdate.ElapsedMilliseconds > 1000)
+                    {
+                        removeBar(barInfo.Value.bar);//remove from ui
+                        bars.TryRemove(barInfo);
+                    }
+                }
+
 
             });
         }
